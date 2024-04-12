@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 save_dir_path = 'output/mel_frequency_spectrogram'
 
-def load_audio_file(file_path, sample_rate=22050):
+def load_audio_file(file_path, sample_rate=44100):
     """
     Load an audio file.
     """

@@ -48,21 +48,16 @@ class ResidualUNet(nn.Module):
         self.down2 = DownBlock(16, 32)
         self.down3 = DownBlock(32, 64)
         self.bottleneck = ResidualBlock(64)
-        # Upsampling blocks
-        self.up3 = UpBlock(64, 32, 32)  # Upsampled channels + skip connection channels
-        self.up2 = UpBlock(32+32, 16, 16)  # Channels from previous UpBlock and skip connection
-        self.up1 = UpBlock(16+16, out_channels, in_channels)  # Final upsample to match input channels
+        self.up3 = UpBlock(64, 32, 32)
+        self.up2 = UpBlock(32 + 32, 16, 16)
+        self.up1 = UpBlock(16 + 16, out_channels, in_channels)
 
     def forward(self, x):
-        # Downsampling
-        skip1 = self.down1(x)  # Output here has 16 channels
-        skip2 = self.down2(skip1)  # Output here has 32 channels
-        skip3 = self.down3(skip2)  # Output here has 64 channels
-        # Bottleneck
-        x = self.bottleneck(skip3)  # Output here has 64 channels
-        # Upsampling with skip connections
-        x = self.up3(x, skip2)  # Skip connection adds 32 channels
-        x = self.up2(x, skip1)  # Skip connection adds 16 channels
-        x = F.interpolate(x, size=skip1.size()[2:], mode='linear', align_corners=False)  # Resize to match skip1
-        x = self.up1(x, skip1)  # Skip connection adds in_channels channels from the original input
+        skip1 = self.down1(x)
+        skip2 = self.down2(skip1)
+        skip3 = self.down3(skip2)
+        x = self.bottleneck(skip3)
+        x = self.up3(x, skip3)
+        x = self.up2(x, skip2)
+        x = self.up1(x, skip1)
         return x

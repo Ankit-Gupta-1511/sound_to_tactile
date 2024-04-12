@@ -1,63 +1,70 @@
-# tactile_preprocessing.py
-
 import os
 import numpy as np
+import librosa  # Used for audio, but placeholder for tactile signal processing
 import torch
 
-def load_tactile_file(file_path):
-    """
-    Load tactile data from a text file.
-    """
-    # This assumes tactile data is stored in plain text with one measurement per line
-    data = np.loadtxt(file_path)
-    return data
+def mel_spectrogram(data, sr=10000, n_fft=2048, hop_length=512, n_mels=128):
+    """ Placeholder for tactile data conversion to Mel-spectrogram """
+    S = librosa.feature.melspectrogram(y=data, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels)
+    return librosa.power_to_db(S, ref=np.max)
+
+
+
+
+def linear_prediction_coefficients(data, order=2):
+    """ Placeholder function for calculating LPCs of a signal """
+    
+    a = librosa.lpc(data, order=order)
+    return a
 
 def normalize_data(data):
-    """
-    Normalize the tactile data to have zero mean and unit variance.
-    """
-    mean = np.mean(data, axis=0)
-    std = np.std(data, axis=0)
-    normalized_data = (data - mean) / std
-    return normalized_data
+    mean = np.mean(data)
+    std = np.std(data)
+    
+    # Check if standard deviation is zero
+    if std == 0:
+        print("Standard deviation is zero. Returning zeroed data to avoid division by zero.")
+        return np.zeros(data.shape)
+    else:
+        return (data - mean) / std
 
-def preprocess_tactile(file_path):
-    """
-    Preprocess tactile file to create a normalized data tensor.
-    """
-    # Load the data
-    data = load_tactile_file(file_path)
-    
-    # Normalize the data
-    normalized_data = normalize_data(data)
-    
-    # Convert the normalized data to a PyTorch tensor
-    data_tensor = torch.from_numpy(normalized_data).float()
-    
-    # Add a batch dimension (B x C x L) if you're using 1D convolutional network
-    data_tensor = data_tensor.unsqueeze(0)
-    
-    return data_tensor
+def preprocess_tactile_data(file_path):
+    """ Process tactile file to create feature vectors """
+    data = np.loadtxt(file_path)
+    sr = 10000  # Sample rate for tactile data might need to be defined based on data acquisition
+    mel_spec = mel_spectrogram(data, sr=sr)
+    lpc_coeffs = linear_prediction_coefficients(data)
 
-def preprocess_tactile_directory(tactile_dir):
+    # Normalize LPC coefficients
+    normalized_lpc =normalize_data(lpc_coeffs)
+    feature_tensor = torch.tensor(normalized_lpc, dtype=torch.float32)
+
+    return feature_tensor.unsqueeze(0)  # Adding batch dimension
+
+def preprocess_tactile_directory(directory):
     """
     Process all tactile data files in the specified directory.
+    
+    Args:
+    - directory (str): Directory containing the tactile data files.
+    
+    Returns:
+    - all_data (torch.Tensor): Tensor containing all the preprocessed tactile data.
+    - file_names (list): List of filenames in the order they were processed.
     """
-    tactile_tensors = []
-    file_names = []
+    file_names = []  # List to keep track of file names
+    all_features = []
 
-    for file_name in os.listdir(tactile_dir):
-        if file_name.endswith('.txt'):  # Assuming .txt format
-            print("Pre-processing - ", file_name)
-            file_path = os.path.join(tactile_dir, file_name)
-            tactile_tensor = preprocess_tactile(file_path)
-            tactile_tensors.append(tactile_tensor)
+    for file_name in os.listdir(directory):
+        if file_name.endswith('.txt'):
+            print("Preprocessing - ", file_name)
+            file_path = os.path.join(directory, file_name)
+            features = preprocess_tactile_data(file_path)
+            all_features.append(features)
             file_names.append(file_name)
 
-    # Stack all tactile tensors
-    if tactile_tensors:
-        tactile_data = torch.stack(tactile_tensors, dim=0)
-    else:
-        tactile_data = torch.empty(0)
+    # Stack all features along the first dimension
+    tactile_data = torch.cat(all_features, dim=0)
 
     return tactile_data, file_names
+
