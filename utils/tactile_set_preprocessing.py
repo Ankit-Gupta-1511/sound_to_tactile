@@ -7,19 +7,28 @@ import librosa
 def mel_spectrogram(data, sr=10000, n_fft=1024, hop_length=None, n_mels=256):
     """ Convert data into Mel-spectrogram """
     if hop_length is None:
-        hop_length = (data.shape[0] - n_fft) // (n_mels - 1)
+        # Calculate the number of samples for the 4s duration of the file
+        num_samples = sr * 4
+
+        # Calculate hop_length to get 256 time steps (one less than n_mels because the first frame is centered at time zero)
+        hop_length = max(1, num_samples // (n_mels - 1))
     S = librosa.feature.melspectrogram(y=data, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels)
-    return librosa.power_to_db(S, ref=np.max)
+    mel_spec_db = librosa.power_to_db(S, ref=np.max)
+    
+    # Ensure mel_spec_db has the shape (n_mels, 256) by trimming or padding
+    mel_spec_db = mel_spec_db[:, :256] if mel_spec_db.shape[1] > 256 else np.pad(mel_spec_db, [(0, 0), (0, max(0, 256 - mel_spec_db.shape[1]))], mode='constant')
+
+    return mel_spec_db
 
 def normalize_data(data):
     """ Normalize data """
     return librosa.util.normalize(data)
 
-def preprocess(file_path, duration=3, sr=10000, n_mels=256):
+def preprocess(file_path, duration=4, sr=10000, n_mels=256):
     """ Process tactile file to create feature vectors """
     # Load the data
     data = np.loadtxt(file_path)
-    # Resample or truncate to 3 seconds
+    # Resample or truncate to 4 seconds
     num_samples = sr * duration
     if data.shape[0] > num_samples:
         data = data[:num_samples]
@@ -33,8 +42,10 @@ def preprocess(file_path, duration=3, sr=10000, n_mels=256):
     mel_spec_norm = normalize_data(mel_spec)
 
     # Resize to 256x256 if necessary
+    if mel_spec_norm.shape[0] < 256:
+        padding_amount = 256 - mel_spec_norm.shape[0]
+        mel_spec_norm = np.pad(mel_spec_norm, ((0, padding_amount), (0, 0)), mode='constant')
     if mel_spec_norm.shape[1] < 256:
-        # If fewer than 256 time-steps, pad with zeros
         padding_amount = 256 - mel_spec_norm.shape[1]
         mel_spec_norm = np.pad(mel_spec_norm, ((0, 0), (0, padding_amount)), mode='constant')
 
