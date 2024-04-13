@@ -70,7 +70,7 @@ dataset = TensorDataset(audio_data, tactile_data)
 dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
 # Initialize the model
-model = ResidualUNet(in_channels=128)
+model = ResidualUNet()
 
 # Define a loss function and optimizer
 criterion = nn.MSELoss()  # Example loss function
@@ -90,6 +90,8 @@ for epoch in range(num_epochs):
         tactile = tactile.to(device)
         
         # Forward pass
+        audio = audio.unsqueeze(1)
+        print(audio.shape)
         predictions = model(audio)
         
         # Compute loss
@@ -100,8 +102,7 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
         
-        if (i+1) % 10 == 0:
-            print(f'Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{len(dataloader)}], Loss: {loss.item()}')
+        print(f'Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{len(dataloader)}], Loss: {loss.item()}')
 
 # Save the model's state_dict
 torch.save(model.state_dict(), 'output/model/model_weights.pth')
