@@ -63,11 +63,11 @@ else:
     print("Preprocessed and saved new tactile data.")
 
 
-print(audio_data.shape, tactile_data.shape)
+# print(audio_data.shape, tactile_data.shape)
 
 # Create datasets and dataloaders
 dataset = TensorDataset(audio_data, tactile_data)
-dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
 
 # Initialize the model
 model = ResidualUNet()
@@ -83,6 +83,8 @@ model.to(device)
 # Training loop
 num_epochs = 10
 model.train()
+
+print("Starting training.")
 for epoch in range(num_epochs):
     for i, (audio, tactile) in enumerate(dataloader):
         # Move tensors to the configured device
@@ -91,18 +93,20 @@ for epoch in range(num_epochs):
         
         # Forward pass
         audio = audio.unsqueeze(1)
-        print(audio.shape)
         predictions = model(audio)
         
         # Compute loss
+        # print("Computing loss")
         loss = criterion(predictions, tactile)
         
         # Backward pass and optimize
+        # print("Optimizing and doing a backward pass")
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         
-        print(f'Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{len(dataloader)}], Loss: {loss.item()}')
+        if (i+1) % 10 == 0:
+            print(f'Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{len(dataloader)}], Loss: {loss.item()}')
 
 # Save the model's state_dict
 torch.save(model.state_dict(), 'output/model/model_weights.pth')

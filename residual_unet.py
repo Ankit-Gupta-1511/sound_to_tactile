@@ -51,10 +51,8 @@ class UpBlock(nn.Module):
 
     def forward(self, x, skip):
         x = self.upconv(x)
-        print("Upconv x = ", x.shape)
         # The output_padding should correct the shape to [32, 64, 128, 128]
         x = torch.cat((x, skip), dim=1)  # Concatenate along the channel dimension
-        print("After concat x = ", x.shape)
         x = self.residual_block(x)
         return x
 
@@ -80,13 +78,13 @@ class ResidualUNet(nn.Module):
 
     def forward(self, x):
         # Downsample
-        print("x shape = ", x.shape)
+        # print("x shape = ", x.shape)
         x1 = self.conv_block1(x)
-        print("x1 shape = ", x1.shape)
+        # print("x1 shape = ", x1.shape)
         x2 = self.down1(x1)
-        print("x2 shape = ", x2.shape)
+        # print("x2 shape = ", x2.shape)
         x3 = self.down2(x2)
-        print("x3 shape = ", x3.shape)
+        # print("x3 shape = ", x3.shape)
         
         # Flatten and pass through a dense layer
         # x_flat = self.flat(x3)
@@ -98,15 +96,15 @@ class ResidualUNet(nn.Module):
         # # Reshape back to feature map and apply residual blocks
         # x_res = x_dense.view(32, 128, 128, 128)  # Now the reshape should work
         x_res = self.res_blocks(x3)
-        print("x_res shape = ", x_res.shape)
+        # print("x_res shape = ", x_res.shape)
 
         # Upsample with skip connections
         x = self.up1(x_res, x2)
-        print("x_up2 shape = ", x.shape)
+        # print("x_up2 shape = ", x.shape)
         x = self.up2(x, x1)
-        print("x_up1 shape = ", x.shape)
+        # print("x_up1 shape = ", x.shape)
 
         # Output convolution
         x = self.out_conv(x)
-        print("x shape = ", x.shape)
+        # print("x shape = ", x.shape)
         return x
