@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
 import pickle
 import torch.nn as nn
+import csv
 
 from utils.audio_preprocessing import preprocess_directory
 from utils.tactile_preprocessing import preprocess_tactile_directory
@@ -11,6 +12,8 @@ from utils.tactile_set_preprocessing import preprocess_tactile_data
 from residual_unet import ResidualUNet
 
 model_path = 'output/model/model_weights.pth'
+
+results_csv_path = 'output/st_sim_results.csv'
 
 # Paths for data
 audio_tensor_path = 'output/preprocessing/audio_data_test.pt'
@@ -124,7 +127,7 @@ else:
 
 # Create a TensorDataset and DataLoader
 test_dataset = TensorDataset(audio_data, tactile_data)
-test_dataloader = DataLoader(test_dataset, batch_size=4, shuffle=False)
+test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
 model = ResidualUNet()
 model.load_state_dict(torch.load(model_path))
@@ -134,12 +137,24 @@ model.eval()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
+scores = []
 with torch.no_grad():
-    for original_audio_signals, original_tactile_signal in test_dataloader:
+    for original_audio_signals, original_tactile_signals in test_dataloader:
 
         original_audio_signals = original_audio_signals.to(device).unsqueeze(1)
-        original_tactile_signal = original_tactile_signal.to(device)
+        original_tactile_signals = original_tactile_signals.to(device)
         predicted_signals = model(original_audio_signals)
         # print(original_tactile_signal.shape, predicted_signals.shape)
-        score = st_sim(original_tactile_signal, predicted_signals)
+        score = st_sim(original_tactile_signals, predicted_signals)
         print(f"ST-SIM Score: {score.item()}")
+
+        scores.append(score.item())
+
+with open(results_csv_path, 'w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(['Audio Filename', 'ST-SIM Score'])
+    for index, file_name in enumerate(file_names):
+        # print(index, file_name, scores[index])
+        writer.writerow([file_name, scores[index]])
+
+print(f'Results saved to {results_csv_path}')
