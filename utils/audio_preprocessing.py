@@ -65,7 +65,7 @@ def preprocess_directory(audio_dir, sample_rate=44100):
         if file_name.endswith('.wav'):
             print("Pre-processing - ", file_name)
             file_path = os.path.join(audio_dir, file_name)
-            spectrogram_tensor = preprocess_audio(file_path, save_dir=None)
+            spectrogram_tensor = preprocess_audio(file_path, save_dir=save_dir_path)
             audio_tensors.append(spectrogram_tensor)
             file_names.append(file_name)
 

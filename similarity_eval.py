@@ -21,33 +21,39 @@ tactile_tensor_path = 'output/preprocessing/tactile_data_test.pt'
 tactile_file_names_path = 'output/preprocessing/tactile_file_names_test.pkl'
 tactile_dir  = 'data/AccelScansComponents/Movement/Testing'
 
-def spectral_similarity(x, y):
-    """Compute the spectral similarity between two sets of signals."""
+def apply_psychometric_function(magnitude, threshold, tau, theta):
+    """ Apply the psychometric function to convert magnitudes to detection probabilities.
+        magnitude: Magnitude of the FFT
+        threshold: Detection threshold (dT)
+        tau: Modulation threshold
+        theta: Standard deviation for the psychometric function
+    """
+    # Convert magnitude to acceleration units if needed
+    magnitude = 9.81 * magnitude  # Convert to m/s^2 if your magnitude is not already in these units
+    # Make sure constants are tensors and on the same device and type as magnitude
+    two = torch.tensor(2.0, dtype=magnitude.dtype, device=magnitude.device)
+    # Compute probability density using the cumulative distribution function of a normal distribution
+    probability_density = 0.5 * (1 + torch.erf((magnitude - tau * threshold) / (theta * torch.sqrt(two))))
+    return probability_density
+
+def spectral_similarity(x, y, threshold=1.0, tau=1.0, theta=0.1):
+    """ Compute the spectral similarity between two sets of signals using ST-SIM measure. """
     # Assuming x and y are of shape [batch, channels, height, width]
-    # and we need to convert them to complex numbers before FFT
+    # FFT to convert signals to frequency domain
+    X = torch.fft.fftn(x, dim=(2, 3))
+    Y = torch.fft.fftn(y, dim=(2, 3))
     
-    # Expand dimensions to add an imaginary part
-    zero_imag = torch.zeros_like(x)
+    # Compute magnitude from real and imaginary parts
+    magX = torch.sqrt(X.real**2 + X.imag**2)
+    magY = torch.sqrt(Y.real**2 + Y.imag**2)
     
-    # Stack along the last dimension to form [batch, channels, height, width, 2]
-    x_complex = torch.stack((x, zero_imag), dim=-1)
-    y_complex = torch.stack((y, zero_imag), dim=-1)
+    # Apply psychometric function to magnitudes
+    pX = apply_psychometric_function(magX, threshold, tau, theta)
+    pY = apply_psychometric_function(magY, threshold, tau, theta)
     
-    # Compute the FFT
-    X = torch.fft.fftn(x_complex, dim=(2, 3))
-    Y = torch.fft.fftn(y_complex, dim=(2, 3))
-    
-    # Compute magnitude
-    magX = torch.sqrt(X[..., 0]**2 + X[..., 1]**2)
-    magY = torch.sqrt(Y[..., 0]**2 + Y[..., 1]**2)
-    
-    # Normalize magnitudes to prevent large dynamic range issues
-    magX = (magX - magX.mean(dim=(2,3), keepdim=True)) / (magX.std(dim=(2,3), keepdim=True) + 1e-8)
-    magY = (magY - magY.mean(dim=(2,3), keepdim=True)) / (magY.std(dim=(2,3), keepdim=True) + 1e-8)
-    
-    # Calculate similarity
-    num = (magX * magY).sum(dim=(2, 3))  # sum over spatial dimensions
-    denom = torch.sqrt((magX**2).sum(dim=(2, 3)) * (magY**2).sum(dim=(2, 3)))
+    # Calculate spectral similarity
+    num = (pX * pY).sum(dim=(2, 3))  # sum over spatial dimensions
+    denom = torch.sqrt((pX**2).sum(dim=(2, 3)) * (pY**2).sum(dim=(2, 3)))
     similarity = num / (denom + 1e-8)
     
     return similarity.mean()
