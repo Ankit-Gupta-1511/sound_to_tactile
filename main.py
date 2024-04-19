@@ -73,15 +73,15 @@ dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
 model = ResidualUNet()
 
 # Define a loss function and optimizer
-criterion = nn.MSELoss()  # Example loss function
-optimizer = optim.Adam(model.parameters(), lr=1e-3)  # Example optimizer
+criterion = nn.MSELoss()
+optimizer = optim.Adam(model.parameters(), lr=0.0001) 
 
 # Device configuration - using CUDA if available
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
 # Training loop
-num_epochs = 10
+num_epochs = 100
 model.train()
 
 print("Starting training.")
@@ -109,5 +109,5 @@ for epoch in range(num_epochs):
             print(f'Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{len(dataloader)}], Loss: {loss.item()}')
 
 # Save the model's state_dict
-torch.save(model.state_dict(), 'output/model/model_weights.pth')
+torch.save(model.state_dict(), 'output/model/model_weights_new.pth')
 print('Model trained and saved successfully.')

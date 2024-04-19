@@ -3,6 +3,9 @@ import torch
 import os
 from itertools import product
 import librosa
+import matplotlib.pyplot as plt
+
+save_dir = 'output/mel_frequency_spectrogram/tactile'
 
 def mel_spectrogram(data, sr=10000, n_fft=1024, hop_length=None, n_mels=256):
     """ Convert data into Mel-spectrogram """
@@ -71,6 +74,24 @@ def preprocess(file_path, duration=4, sr=10000, n_mels=256):
     if mel_spec_norm.shape[1] < 256:
         padding_amount = 256 - mel_spec_norm.shape[1]
         mel_spec_norm = np.pad(mel_spec_norm, ((0, 0), (0, padding_amount)), mode='constant')
+
+    # Calculate the number of samples for the 4s duration of the file
+    num_samples = sr * 4
+
+    # Calculate hop_length to get 256 time steps (one less than n_mels because the first frame is centered at time zero)
+    hop_length = max(1, num_samples // (n_mels - 1))
+
+    if save_dir is not None:
+        plt.figure(figsize=(10, 4))
+        librosa.display.specshow(mel_spec_norm, sr=sr, hop_length=hop_length, x_axis='time', y_axis='mel')
+        plt.colorbar(format='%+2.0f dB')
+        plt.title('Mel-frequency spectrogram')
+        plt.tight_layout()
+        os.makedirs(save_dir, exist_ok=True)
+        plot_filename = os.path.splitext(os.path.basename(file_path))[0] + '_spectrogram.png'
+        save_path = os.path.join(save_dir, plot_filename)
+        plt.savefig(save_path)
+        plt.close()
 
     return mel_spec_norm
 

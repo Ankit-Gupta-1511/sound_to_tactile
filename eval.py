@@ -10,7 +10,7 @@ from utils.tactile_set_preprocessing import preprocess_tactile_data, mel_spectro
 from utils.plot_utils import plot_signals
 from residual_unet import ResidualUNet
 
-model_path = 'output/model/model_weights.pth'
+model_path = 'output/model/model_weights_new.pth'
 
 # Paths for data
 audio_tensor_path = 'output/preprocessing/audio_data_test.pt'
@@ -101,10 +101,12 @@ with torch.no_grad():
         total_loss += loss.item()
         count += 1
 
-        print(count)
-        reconstructed_waveform = mel_spectrogram_to_tactile(predictions)
-        tactile_waveform = mel_spectrogram_to_tactile(tactile)
-        plot_signals(original=tactile_waveform, reconstructed=reconstructed_waveform, sr=10000, file_name=file_names[count - 1])
+        # reconstructed_waveform = mel_spectrogram_to_tactile(predictions)
+        # tactile_waveform = mel_spectrogram_to_tactile(tactile)
+        # plot_signals(original=tactile_waveform, reconstructed=reconstructed_waveform, sr=10000, file_name=file_names[count - 1])
+        # print("Rendered plot for: ", file_names[count-1])
+        # if count > 10:
+        #     break
 
 # Average loss
 average_loss = total_loss / count

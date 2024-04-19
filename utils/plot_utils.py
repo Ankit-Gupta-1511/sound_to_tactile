@@ -21,22 +21,33 @@ def plot_signals(original, reconstructed, sr, file_name):
     time_axis_original = np.linspace(0, len(original) / sr, num=len(original))
     time_axis_reconstructed = np.linspace(0, len(reconstructed) / sr, num=len(reconstructed))
     
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(18, 6))
     
-    plt.subplot(1, 2, 1)
+    plt.subplot(1, 3, 1)
     plt.plot(time_axis_original, original, alpha=0.5, label='Original')
     plt.title('Original Signal')
     plt.xlabel('Time (seconds)')
     plt.ylabel('Amplitude')
     plt.legend()
     
-    plt.subplot(1, 2, 2)
-    plt.plot(time_axis_reconstructed, reconstructed, alpha=0.5, color='r', label='Reconstructed')
+    plt.subplot(1, 3, 2)
+    plt.plot(time_axis_reconstructed, reconstructed, alpha=0.5, color='orange', label='Reconstructed')
     plt.title('Reconstructed Signal')
     plt.xlabel('Time (seconds)')
     plt.ylabel('Amplitude')
     plt.legend()
-    
+
+    plt.subplot(1, 3, 3)
+    plt.plot(time_axis_original, original, label='Original', alpha=0.5, color='blue')
+    plt.plot(time_axis_original, reconstructed, label='Reconstructed', alpha=0.5, color='orange')
+    plt.title('Comparison of Original and Reconstructed Signals')
+    plt.xlabel('Time (seconds)')
+    plt.ylabel('Amplitude')
+    plt.legend()
+
     plt.tight_layout()
     plt.savefig(plot_path)
     plt.close()  # Ensure the plot is closed after saving
+
+    
+    
