@@ -1,5 +1,13 @@
 # Sound To Tactile
 
+This code is part of assignment for the course - Introduction to haptics (EEL7670) as part of MTech - AR/VR Programme by IIT Jodhpur under the guidance of Dr. Amit Bhardwaj.
+
+## Problem statement
+
+Wielding a stylus to explore the surface or texture of an object generates signals in two modalities Sound and Haptics. There are ample literature that shows that there is mapping between these two modalities. Here in this assignment we ask you (A)to find such a mapping and (B)evaluate its performance based on some measure. Formally,
+1. Develop an approach to create models that realize automatic cross modal signal generation, pertaining to certain exploratory procedures.
+2. Use ST-SIM measure defined in the paper(Vibrotactile Signal Compression Based on Sparse Linear Prediction and Human Tactile Sensitivity Function.) to gauge performance of your algorithm.
+
 ## Setting up the project
 
 To setup the project you just need to install and setup anaconda in your computer. This project is created in python-3.11.8.
@@ -31,3 +39,9 @@ To setup the project you just need to install and setup anaconda in your compute
 3. For evaluating the model you can run `python eval.py`
 4. For getting the ST-SIM measure you can run `python similarity_eval.py`
 
+## Downloading pretrained weights
+
+you can download pretrained weights from here -
+https://drive.google.com/file/d/1DLv4xiQaU3X4j_cPMhSgoFRfXAVarBPD/view?usp=drive_link
+
+Download the weights and put them inside the `output -> model` directory.
