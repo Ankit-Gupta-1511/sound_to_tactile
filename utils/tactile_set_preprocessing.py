@@ -20,6 +20,29 @@ def mel_spectrogram(data, sr=10000, n_fft=1024, hop_length=None, n_mels=256):
 
     return mel_spec_db
 
+
+def mel_spectrogram_to_tactile(mel_spec_db, sr=10000, n_fft=1024, hop_length=None, n_mels=256):
+    """ Convert Mel spectrogram back to waveform """
+    if hop_length is None:
+        # Calculate the number of samples for the 4s duration of the file
+        num_samples = sr * 4
+        # Calculate hop_length to get 256 time steps
+        hop_length = max(1, num_samples // (n_mels - 1))
+
+    # Check if the tensor is on CUDA and move it to CPU
+    if mel_spec_db.is_cuda:
+        mel_spec_db = mel_spec_db.cpu()
+
+    # Convert the tensor to numpy array after ensuring it's on the CPU
+    mel_spec_db_np = mel_spec_db.numpy()
+
+    # Convert decibel to power spectrogram
+    mel_spec = librosa.db_to_power(mel_spec_db_np)
+    # Inverse Mel spectrogram
+    y_inv = librosa.feature.inverse.mel_to_audio(mel_spec, sr=sr, n_fft=n_fft, hop_length=hop_length, n_iter=32)
+    return y_inv
+
+
 def normalize_data(data):
     """ Normalize data """
     return librosa.util.normalize(data)

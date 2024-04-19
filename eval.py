@@ -6,7 +6,8 @@ import torch.nn as nn
 
 from utils.audio_preprocessing import preprocess_directory
 from utils.tactile_preprocessing import preprocess_tactile_directory
-from utils.tactile_set_preprocessing import preprocess_tactile_data
+from utils.tactile_set_preprocessing import preprocess_tactile_data, mel_spectrogram_to_tactile
+from utils.plot_utils import plot_signals
 from residual_unet import ResidualUNet
 
 model_path = 'output/model/model_weights.pth'
@@ -66,7 +67,7 @@ else:
 
 # Create a TensorDataset and DataLoader
 test_dataset = TensorDataset(audio_data, tactile_data)
-test_dataloader = DataLoader(test_dataset, batch_size=4, shuffle=False)
+test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
 # Loading trained model
 model = ResidualUNet()
@@ -85,6 +86,7 @@ total_loss = 0.0
 count = 0
 
 # No gradient computation during testing
+
 with torch.no_grad():
     for audio, tactile in test_dataloader:
         # Move tensors to the configured device
@@ -98,6 +100,11 @@ with torch.no_grad():
         loss = criterion(predictions, tactile)
         total_loss += loss.item()
         count += 1
+
+        print(count)
+        reconstructed_waveform = mel_spectrogram_to_tactile(predictions)
+        tactile_waveform = mel_spectrogram_to_tactile(tactile)
+        plot_signals(original=tactile_waveform, reconstructed=reconstructed_waveform, sr=10000, file_name=file_names[count - 1])
 
 # Average loss
 average_loss = total_loss / count
