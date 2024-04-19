@@ -2,6 +2,10 @@
 
 This code is part of assignment for the course - Introduction to haptics (EEL7670) as part of MTech - AR/VR Programme by IIT Jodhpur under the guidance of Dr. Amit Bhardwaj.
 
+This code implements the paper - [Method for Audio-to-Tactile Cross-Modality Generation Based on Residual U-Net](https://ieeexplore.ieee.org/document/10330031)
+
+The ST-SIM measure is taken from the paper - [Vibrotactile Signal Compression Based on Sparse Linear Prediction and Human Tactile Sensitivity Function](https://ieeexplore.ieee.org/document/8816110)
+
 ## Problem statement
 
 Wielding a stylus to explore the surface or texture of an object generates signals in two modalities Sound and Haptics. There are ample literature that shows that there is mapping between these two modalities. Here in this assignment we ask you (A)to find such a mapping and (B)evaluate its performance based on some measure. Formally,
@@ -45,3 +49,9 @@ you can download pretrained weights from here -
 https://drive.google.com/file/d/1DLv4xiQaU3X4j_cPMhSgoFRfXAVarBPD/view?usp=drive_link
 
 Download the weights and put them inside the `output -> model` directory.
+
+## References 
+
+1. R. Hassen and E. Steinbach, "Vibrotactile Signal Compression Based on Sparse Linear Prediction and Human Tactile Sensitivity Function," 2019 IEEE World Haptics Conference (WHC), Tokyo, Japan, 2019, pp. 301-306, doi: 10.1109/WHC.2019.8816110. keywords: {Sensitivity;Acceleration;Encoding;Vibrations;Predictive models;Minimization;Surface waves}
+
+2. Y. Zhan, X. Sun, Q. Wang and W. Nai, "Method for Audio-to-Tactile Cross-Modality Generation Based on Residual U-Net," in IEEE Transactions on Instrumentation and Measurement, vol. 73, pp. 1-14, 2024, Art no. 2500414, doi: 10.1109/TIM.2023.3336453.
